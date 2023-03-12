@@ -27,8 +27,8 @@
         "icons/icon.icns",
         "icons/icon.ico"
       ],
-      "identifier": "com.tauri.dev",
-      "targets": "all"
+      "identifier": "me.rokaspuz.ice-management",
+      "targets": "msi"
     },
     "security": {
       "csp": null
