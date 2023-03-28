@@ -1,5 +1,5 @@
 [package]
-name = "ice-management"
+name = "ice-production"
 version = "0.0.0"
 description = "ICE DB management"
 authors = ["Roka Puzonas"]

@@ -1,29 +1,29 @@
 <script lang="ts">
-  import Greet from './lib/Greet.svelte'
-	import { Content } from "carbon-components-svelte";
-
 	import Router, {location} from "svelte-spa-router"
+	import { Header, Content, SideNav, SideNavItems, SideNavLink } from "carbon-components-svelte";
+	import User from "carbon-icons-svelte/lib/User.svelte";
 
-	import { Header, HeaderNav, HeaderNavItem } from "carbon-components-svelte";
 	import Home from './routes/Home.svelte'
-	import Managers from './routes/Managers.svelte'
-	import Factories from './routes/Factories.svelte'
+	import FactoriesManagers from './routes/Factories-Managers.svelte'
+
+	let isSideNavOpen = false;
 </script>
 
-<Header href="/#/" company="ICE" platformName="Management">
-	<HeaderNav>
-    <HeaderNavItem href="/#/factories" text="Factories" />
-    <HeaderNavItem href="/#/managers" text="Managers" />
-	</HeaderNav>
-</Header>
+<Header href="/#/" company="ICE" platformName="Production" />
+<SideNav bind:isOpen={isSideNavOpen} rail>
+	<SideNavItems>
+		<SideNavLink
+			icon={User}
+			text="Factories & Managers"
+			href="/#/factories-managers"
+			isSelected={$location == "/factories-managers"}
+		/>
+	</SideNavItems>
+</SideNav>
 
 <Content>
 	<Router routes={{
 		"/": Home,
-		"/managers": Managers,
-		"/factories": Factories,
+		"/factories-managers": FactoriesManagers,
 	}} />
-
-	<hr>
-	{$location}
 </Content>

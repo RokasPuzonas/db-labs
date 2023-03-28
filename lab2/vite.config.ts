@@ -3,6 +3,7 @@ import { svelte } from "@sveltejs/vite-plugin-svelte";
 import sveltePreprocess from "svelte-preprocess";
 import transformerDirective from '@unocss/transformer-directives'
 import Unocss from 'unocss/vite'
+import { resolve } from 'path'
 
 const mobile =
   process.env.TAURI_PLATFORM === "android" ||

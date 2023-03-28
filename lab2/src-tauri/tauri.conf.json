@@ -27,7 +27,7 @@
         "icons/icon.icns",
         "icons/icon.ico"
       ],
-      "identifier": "me.rokaspuz.ice-management",
+      "identifier": "me.rokaspuz.ice-production",
       "targets": "msi"
     },
     "security": {

@@ -1,6 +1,9 @@
-# ICE Management
+# ICE Production
 
 ICE - Ice Cream Emporium
+
+* [Icons](https://carbon-icons-svelte.onrender.com/)
+* [Carbon components](https://carbon-components-svelte.onrender.com/)
 
 ## Recommended IDE Setup
 
