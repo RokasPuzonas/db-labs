@@ -1,18 +1,19 @@
 <script lang="ts">
 	import { Form, TextInput } from "carbon-components-svelte";
+    import type { ManagerData } from "./api";
 
-	export let manager = {
-		firstName:   "",
-		surname:     "",
-		phoneNumber: "",
-		title:       "",
-		email:       ""
+	export let manager: ManagerData = {
+		first_name:   "",
+		surname:      "",
+		phone_number: "",
+		title:        "",
+		email:        ""
 	}
 
 	// First name validation
 	let showFirstNameInvalid = false;
 	function validateFirstName() {
-		showFirstNameInvalid = manager.firstName === ""
+		showFirstNameInvalid = manager.first_name === ""
 	}
 
 	// Surname validation
@@ -36,9 +37,9 @@
 	};
 
 	export const reset = () => {
-		manager.firstName = ""
+		manager.first_name = ""
 		manager.surname = ""
-		manager.phoneNumber = ""
+		manager.phone_number = ""
 		manager.title = ""
 		manager.email = ""
 		showFirstNameInvalid = false
@@ -50,7 +51,7 @@
 
 <Form class="flex flex-col gap-1rem" title="Manager">
 	<TextInput
-		bind:value={manager.firstName}
+		bind:value={manager.first_name}
 		invalidText={"First name can't be empty"}
 		bind:invalid={showFirstNameInvalid}
 		on:input={validateFirstName}
@@ -74,7 +75,7 @@
 		labelText="Title"
 	/>
 	<TextInput
-		bind:value={manager.phoneNumber}
+		bind:value={manager.phone_number}
 		labelText="Phone number"
 	/>
 	<TextInput

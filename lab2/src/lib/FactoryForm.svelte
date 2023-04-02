@@ -1,11 +1,12 @@
 
 <script lang="ts">
 	import { Form, TextInput, NumberInput } from "carbon-components-svelte";
+	import type { FactoryData } from "./api"
 
-	export const factory = {
+	export let factory: FactoryData = {
 		name:      "",
 		location:  "",
-		floorSize: 1
+		floor_size: 1
 	}
 
 	// Name validation
@@ -24,13 +25,13 @@
 	export const validate = () => {
 		validateName()
 		validateLocation()
-		return !showLocationInvalid && !showNameInvalid && factory.floorSize >= 1
+		return !showLocationInvalid && !showNameInvalid && factory.floor_size >= 1
 	};
 
 	export const reset = () => {
 		factory.name = ""
 		factory.location = ""
-		factory.floorSize = 1
+		factory.floor_size = 1
 		showNameInvalid = false
 		showLocationInvalid = false
 	};
@@ -54,7 +55,7 @@
 		labelText="Location"
 	/>
 	<NumberInput
-        bind:value={factory.floorSize}
+        bind:value={factory.floor_size}
         required
 		hideSteppers
         min={1}
