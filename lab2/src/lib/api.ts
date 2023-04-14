@@ -33,6 +33,16 @@ export interface FactoryData {
 export let factories = writable<Factory[]>([])
 export let managers  = writable<Manager[]>([])
 
+function remove_manager_by_id(id: number) {
+    managers.update(managers => {
+        var index = managers.findIndex(m => m.id == id)
+        if (index != -1) {
+            managers.splice(index, 1)
+        }
+        return managers
+    })
+}
+
 export async function list_factories(): Promise<Factory[]> {
     return invoke("list_factories")
 }
@@ -63,10 +73,45 @@ export async function add_manager_factory(factory: FactoryData, manager: Manager
     return [factory_id, manager_id]
 }
 
-export async function edit_manager(id: number, manager: ManagerData): Promise<void> {
-    // TODO: invoke("edit_manager")
+export async function update_manager(id: number, manager: ManagerData): Promise<void> {
+    invoke("update_manager", { id, manager })
+
+    managers.update((managers) => {
+        var index = managers.findIndex(f => f.id == id)
+        if (index != -1) {
+            managers[index] = {
+                ...managers[index],
+                ...manager
+            }
+        }
+        return managers
+    })
 }
 
-export async function edit_factory(id: number, factory: FactoryData): Promise<void> {
-    // TODO: invoke("edit_factory")
+export async function update_factory(id: number, factory: FactoryData): Promise<void> {
+    invoke("update_factory", { id, factory })
+
+    factories.update((factories) => {
+        var index = factories.findIndex(f => f.id == id)
+        if (index != -1) {
+            factories[index] = {
+                ...factories[index],
+                ...factory
+            }
+        }
+        return factories
+    })
+}
+
+export async function delete_factory(id: number): Promise<void> {
+    invoke("delete_factory", { id })
+
+    factories.update((factories) => {
+        var index = factories.findIndex(f => f.id == id)
+        if (index != -1) {
+            remove_manager_by_id(factories[index].manager_id)
+            factories.splice(index, 1)
+        }
+        return factories
+    })
 }

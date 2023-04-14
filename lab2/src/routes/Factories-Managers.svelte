@@ -13,7 +13,7 @@
     import Edit from "carbon-icons-svelte/lib/Edit.svelte"
     import ManagerForm from "../lib/ManagerForm.svelte"
     import FactoryForm from "../lib/FactoryForm.svelte"
-    import { add_manager_factory, edit_factory, edit_manager, factories, list_factories, list_managers, managers } from "../lib/api"
+    import { add_manager_factory, delete_factory, update_factory, update_manager, factories, list_factories, list_managers, managers } from "../lib/api"
     import { onMount } from 'svelte'
 
     var rows = []
@@ -48,6 +48,7 @@
 
     let currentlyEditingId = undefined
     let showUpdateModal = factory_id => {
+        console.log(factory_id)
         currentlyEditingId = factory_id
 
         let factory = $factories.find(factory => factory.id == factory_id)
@@ -74,6 +75,13 @@
 
     let closeModal = () => {
         isModalShown = false
+    }
+
+    let deleteSelectedRows = async () => {
+        for (var id of selectedRowIds) {
+            await delete_factory(id)
+        }
+        selectedRowIds = []
     }
 </script>
 
@@ -103,10 +111,7 @@
         <Button
             icon={TrashCan}
             disabled={selectedRowIds.length === 0}
-            on:click={() => {
-                rows = rows.filter((row) => !selectedRowIds.includes(row.id));
-                selectedRowIds = [];
-            }}
+            on:click={deleteSelectedRows}
         >
             Delete
         </Button>
@@ -138,7 +143,7 @@
 
 <Modal
     bind:open={isModalShown}
-    modalHeading={currentlyEditingId ? "Edit factory & manager" : "Create factory & manager"}
+    modalHeading={currentlyEditingId != undefined ? "Edit factory & manager" : "Create factory & manager"}
     primaryButtonText="Confirm"
     secondaryButtonText="Cancel"
     on:open
@@ -150,12 +155,12 @@
             return false
         }
 
-        if (currentlyEditingId) {
+        if (currentlyEditingId != undefined) {
             // TODO: Handle if factory is not found
             let manager_id = $factories.find(factory => factory.id == currentlyEditingId).manager_id
 
-            await edit_factory(currentlyEditingId, factoryData) // TODO: handle if failed
-            await edit_manager(manager_id, managerData) // TODO: handle if failed
+            await update_factory(currentlyEditingId, factoryData) // TODO: handle if failed
+            await update_manager(manager_id, managerData) // TODO: handle if failed
         } else {
             await add_manager_factory(factoryData, managerData) // TODO: handle error
         }

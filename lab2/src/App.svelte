@@ -9,7 +9,7 @@
 	let isSideNavOpen = false;
 </script>
 
-<Header href="/#/" company="ICE" platformName="Production" />
+<Header href="/#/" company="ICE" platformName="Production" bind:isSideNavOpen />
 <SideNav bind:isOpen={isSideNavOpen} rail>
 	<SideNavItems>
 		<SideNavLink
