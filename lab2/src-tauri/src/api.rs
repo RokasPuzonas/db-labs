@@ -1,4 +1,4 @@
-use crate::{models::{Manager, Factory, ManagerData, FactoryData, Id}, manager_repo, factory_repo};
+use crate::{models::{Manager, Factory, ManagerData, FactoryData, Id, Process, ProcessData}, manager_repo, factory_repo, process_repo};
 use sqlx::{Pool, MySql};
 use tauri::State;
 
@@ -21,12 +21,14 @@ pub async fn add_manager_factory(
 	Ok((factory_id, manager_id))
 }
 
+// --------------------- Factory ---------------------------
+
 #[tauri::command]
-pub async fn delete_factory(id: Id, db: State<'_, Database>) -> Result<()> {
+pub async fn list_factories(db: State<'_, Database>) -> Result<Vec<Factory>> {
 	let mut tx = db.pool.begin().await?;
-	factory_repo::delete(&mut tx, id).await?;
+	let factories = factory_repo::list(&mut tx).await?;
 	tx.commit().await?;
-	Ok(())
+	Ok(factories)
 }
 
 #[tauri::command]
@@ -38,12 +40,14 @@ pub async fn update_factory(id: Id, factory: FactoryData, db: State<'_, Database
 }
 
 #[tauri::command]
-pub async fn update_manager(id: Id, manager: ManagerData, db: State<'_, Database>) -> Result<()> {
+pub async fn delete_factory(id: Id, db: State<'_, Database>) -> Result<()> {
 	let mut tx = db.pool.begin().await?;
-	manager_repo::update(&mut tx, id, &manager).await?;
+	factory_repo::delete(&mut tx, id).await?;
 	tx.commit().await?;
 	Ok(())
 }
+
+// --------------------- Manager ---------------------------
 
 #[tauri::command]
 pub async fn list_managers(db: State<'_, Database>) -> Result<Vec<Manager>> {
@@ -54,10 +58,47 @@ pub async fn list_managers(db: State<'_, Database>) -> Result<Vec<Manager>> {
 }
 
 #[tauri::command]
-pub async fn list_factories(db: State<'_, Database>) -> Result<Vec<Factory>> {
+pub async fn update_manager(id: Id, manager: ManagerData, db: State<'_, Database>) -> Result<()> {
 	let mut tx = db.pool.begin().await?;
-	let factories = factory_repo::list(&mut tx).await?;
+	manager_repo::update(&mut tx, id, &manager).await?;
 	tx.commit().await?;
-	Ok(factories)
+	Ok(())
 }
 
+
+// --------------------- Process ---------------------------
+
+#[tauri::command]
+pub async fn list_processess(db: State<'_, Database>) -> Result<Vec<Process>> {
+	let mut tx = db.pool.begin().await?;
+	let processess = process_repo::list(&mut tx).await?;
+	tx.commit().await?;
+	Ok(processess)
+}
+
+#[tauri::command]
+pub async fn delete_process(id: Id, db: State<'_, Database>) -> Result<()> {
+	let mut tx = db.pool.begin().await?;
+	process_repo::delete(&mut tx, id).await?;
+	tx.commit().await?;
+	Ok(())
+}
+
+#[tauri::command]
+pub async fn update_process(id: Id, process: ProcessData, db: State<'_, Database>) -> Result<()> {
+	let mut tx = db.pool.begin().await?;
+	process_repo::update(&mut tx, id, &process).await?;
+	tx.commit().await?;
+	Ok(())
+}
+
+#[tauri::command]
+pub async fn add_process(
+		process: ProcessData,
+		db: State<'_, Database>
+	) -> Result<Id> {
+	let mut tx = db.pool.begin().await?;
+	let id = process_repo::add(&mut tx, &process).await?;
+	tx.commit().await?;
+	Ok(id)
+}

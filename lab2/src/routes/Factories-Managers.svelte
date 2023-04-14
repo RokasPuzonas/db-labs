@@ -6,26 +6,17 @@
         ToolbarBatchActions,
         Button,
         ToolbarSearch,
-        Pagination,
         Modal,
     } from "carbon-components-svelte"
     import TrashCan from "carbon-icons-svelte/lib/TrashCan.svelte"
     import Edit from "carbon-icons-svelte/lib/Edit.svelte"
     import ManagerForm from "../lib/ManagerForm.svelte"
     import FactoryForm from "../lib/FactoryForm.svelte"
-    import { add_manager_factory, delete_factory, update_factory, update_manager, factories, list_factories, list_managers, managers } from "../lib/api"
-    import { onMount } from 'svelte'
+    import { add_manager_factory, delete_factory, update_factory, update_manager, factories, managers } from "../lib/api"
 
     var rows = []
 
-    onMount(async () => {
-        $managers = await list_managers()
-        $factories = await list_factories()
-        console.log($managers)
-    })
-
     $: {
-        console.log($factories)
         rows = $factories.map(factory => {
             let manager = $managers.find(m => m.id == factory.manager_id)
             return {

@@ -9,12 +9,13 @@ type MySqlTransaction<'a> = Transaction<'a, MySql>;
 pub async fn create_table(tx: &mut MySqlTransaction<'_>) -> Result<()> {
     sqlx::query(r#"
         CREATE TABLE IF NOT EXISTS `manager` (
-            ID           bigint unsigned NOT NULL,
+            ID           bigint unsigned NOT NULL AUTO_INCREMENT,
             FIRST_NAME   varchar(255)    NOT NULL,
             SURNAME      varchar(255)    NOT NULL,
             PHONE_NUMBER varchar(255)        NULL,
             TITLE        varchar(255)    NOT NULL,
             EMAIL        varchar(255)        NULL,
+
             PRIMARY KEY(ID)
         );"#)
         .execute(tx).await?;

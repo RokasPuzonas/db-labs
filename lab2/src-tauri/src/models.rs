@@ -37,3 +37,16 @@ pub struct FactoryData {
 	pub location: String,
 	pub floor_size: f32
 }
+
+#[derive(Debug, Serialize, FromRow)]
+pub struct Process {
+	pub id: Id,
+	pub name: String,
+	pub size: f32
+}
+
+#[derive(Debug, Deserialize)]
+pub struct ProcessData {
+	pub name: String,
+	pub size: f32
+}

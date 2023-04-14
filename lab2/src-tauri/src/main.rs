@@ -4,12 +4,13 @@
 mod models;
 mod factory_repo;
 mod manager_repo;
+mod process_repo;
 mod api;
 
 use std::{env, process::exit};
 use dotenv::dotenv;
 
-use models::{ManagerData, FactoryData};
+use models::{ManagerData, FactoryData, ProcessData};
 use sqlx::{Pool, MySql, mysql::MySqlPoolOptions, Row};
 
 use api::*;
@@ -19,6 +20,7 @@ async fn setup_tables(pool: &Pool<MySql>) -> Result<()> {
 	let mut tx = pool.begin().await?;
 	manager_repo::create_table(&mut tx).await?;
 	factory_repo::create_table(&mut tx).await?;
+	process_repo::create_table(&mut tx).await?;
 	tx.commit().await?;
 	Ok(())
 }
@@ -33,8 +35,12 @@ async fn drop_all_tables(pool: &Pool<MySql>) -> Result<()> {
 	Ok(())
 }
 
-async fn enable_foreign_key_checks(pool: &Pool<MySql>) -> Result<()> {
-	sqlx::query("SET GLOBAL FOREIGN_KEY_CHECKS=1").execute(pool).await?;
+async fn set_foreign_key_checks(pool: &Pool<MySql>, enable: bool) -> Result<()> {
+	let query = match enable {
+		true => "SET GLOBAL FOREIGN_KEY_CHECKS=1",
+		false => "SET GLOBAL FOREIGN_KEY_CHECKS=0",
+	};
+	sqlx::query(query).execute(pool).await?;
 	Ok(())
 }
 
@@ -52,8 +58,13 @@ async fn add_test_data(pool: &Pool<MySql>) -> Result<()> {
 		location: "idk".into(),
 		floor_size: 10.0,
 	};
+	let process = ProcessData {
+		name: "Certifuge 9000".into(),
+		size: 10.0
+	};
 	let id = manager_repo::add(&mut tx, &manager).await?;
 	factory_repo::add(&mut tx, id, &factory).await?;
+	process_repo::add(&mut tx, &process).await?;
 
 	tx.commit().await?;
 	Ok(())
@@ -77,8 +88,9 @@ async fn main() {
 		.await
 		.unwrap();
 
-	enable_foreign_key_checks(&pool).await.expect("Enable foreign key checks");
+	set_foreign_key_checks(&pool, false).await.expect("Disable foreign key checks");
 	drop_all_tables(&pool).await.unwrap(); // For testing purposes
+	set_foreign_key_checks(&pool, true).await.expect("Enable foreign key checks");
 	setup_tables(&pool).await.expect("Setup tables");
 
 	add_test_data(&pool).await.expect("Add test data");
@@ -86,12 +98,19 @@ async fn main() {
 	tauri::Builder::default()
 		.manage(Database { pool })
 		.invoke_handler(tauri::generate_handler![
-			list_factories,
-			list_managers,
 			add_manager_factory,
+
+			list_factories,
 			delete_factory,
 			update_factory,
-			update_manager
+
+			list_managers,
+			update_manager,
+
+			list_processess,
+			update_process,
+			delete_process,
+			add_process
 		])
 		.run(tauri::generate_context!())
 		.expect("error while running tauri application");

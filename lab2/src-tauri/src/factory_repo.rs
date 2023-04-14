@@ -7,7 +7,7 @@ type MySqlTransaction<'a> = Transaction<'a, MySql>;
 pub async fn create_table(tx: &mut MySqlTransaction<'_>) -> Result<()> {
     sqlx::query(r#"
         CREATE TABLE IF NOT EXISTS `factory` (
-            ID            bigint unsigned NOT NULL,
+            ID            bigint unsigned NOT NULL AUTO_INCREMENT,
             NAME          varchar(255)    NOT NULL,
             LOCATION      varchar(255)    NOT NULL,
             FLOOR_SIZE    float           NOT NULL,
