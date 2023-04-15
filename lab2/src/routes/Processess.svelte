@@ -35,7 +35,7 @@
     }}
     headers={[
         { key: "name", value: "Name" },
-        { key: "size", value: "Size" }
+        { key: "size", value: "Size (m²)" }
     ]}
 >
     <ProcessForm

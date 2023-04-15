@@ -1,6 +1,6 @@
 
 <script lang="ts">
-	import { Form, TextInput, NumberInput } from "carbon-components-svelte";
+	import { Form, TextInput, NumberInput, DataTable } from "carbon-components-svelte";
 	import type { FactoryData } from "./api"
 
 	export let factory: FactoryData = {

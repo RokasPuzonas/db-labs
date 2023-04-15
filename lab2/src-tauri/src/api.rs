@@ -1,7 +1,6 @@
 use crate::{models::{Manager, Factory, ManagerData, FactoryData, Id, Process, ProcessData}, manager_repo, factory_repo, process_repo};
 use sqlx::{Pool, MySql};
 use tauri::State;
-
 use anyhow::Result;
 
 pub struct Database {
@@ -43,6 +42,30 @@ pub async fn update_factory(id: Id, factory: FactoryData, db: State<'_, Database
 pub async fn delete_factory(id: Id, db: State<'_, Database>) -> Result<()> {
 	let mut tx = db.pool.begin().await?;
 	factory_repo::delete(&mut tx, id).await?;
+	tx.commit().await?;
+	Ok(())
+}
+
+#[tauri::command]
+pub async fn list_factory_processess(id: Id, db: State<'_, Database>) -> Result<Vec<Id>> {
+	let mut tx = db.pool.begin().await?;
+	let processess = factory_repo::list_processess(&mut tx, id).await?;
+	tx.commit().await?;
+	Ok(processess)
+}
+
+#[tauri::command]
+pub async fn add_factory_process(factory_id: Id, process_id: Id, db: State<'_, Database>) -> Result<()> {
+	let mut tx = db.pool.begin().await?;
+	factory_repo::add_process(&mut tx, factory_id, process_id).await?;
+	tx.commit().await?;
+	Ok(())
+}
+
+#[tauri::command]
+pub async fn delete_factory_process(factory_id: Id, process_id: Id, db: State<'_, Database>) -> Result<()> {
+	let mut tx = db.pool.begin().await?;
+	factory_repo::delete_process(&mut tx, factory_id, process_id).await?;
 	tx.commit().await?;
 	Ok(())
 }

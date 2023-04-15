@@ -11,16 +11,18 @@ use std::{env, process::exit};
 use dotenv::dotenv;
 
 use models::{ManagerData, FactoryData, ProcessData};
-use sqlx::{Pool, MySql, mysql::MySqlPoolOptions, Row};
+use sqlx::{Pool, MySql, mysql::MySqlPoolOptions, Row, Transaction};
 
 use api::*;
 use anyhow::Result;
 
+type MySqlTransaction<'a> = Transaction<'a, MySql>;
+
 async fn setup_tables(pool: &Pool<MySql>) -> Result<()> {
 	let mut tx = pool.begin().await?;
 	manager_repo::create_table(&mut tx).await?;
-	factory_repo::create_table(&mut tx).await?;
 	process_repo::create_table(&mut tx).await?;
+	factory_repo::create_table(&mut tx).await?;
 	tx.commit().await?;
 	Ok(())
 }
@@ -37,10 +39,15 @@ async fn drop_all_tables(pool: &Pool<MySql>) -> Result<()> {
 
 async fn set_foreign_key_checks(pool: &Pool<MySql>, enable: bool) -> Result<()> {
 	let query = match enable {
-		true => "SET GLOBAL FOREIGN_KEY_CHECKS=1",
-		false => "SET GLOBAL FOREIGN_KEY_CHECKS=0",
+		true => "SET FOREIGN_KEY_CHECKS=1",
+		false => "SET FOREIGN_KEY_CHECKS=0",
 	};
 	sqlx::query(query).execute(pool).await?;
+	Ok(())
+}
+
+async fn add_test_process(tx: &mut MySqlTransaction<'_>, process: ProcessData) -> Result<()> {
+	process_repo::add(tx, &process).await?;
 	Ok(())
 }
 
@@ -58,13 +65,23 @@ async fn add_test_data(pool: &Pool<MySql>) -> Result<()> {
 		location: "idk".into(),
 		floor_size: 10.0,
 	};
-	let process = ProcessData {
-		name: "Certifuge 9000".into(),
-		size: 10.0
-	};
 	let id = manager_repo::add(&mut tx, &manager).await?;
 	factory_repo::add(&mut tx, id, &factory).await?;
-	process_repo::add(&mut tx, &process).await?;
+
+	add_test_process(&mut tx, ProcessData {
+		name: "Certifuge 9000".into(),
+		size: 10.0
+	}).await?;
+
+	add_test_process(&mut tx, ProcessData {
+		name: "Certifuge 9001".into(),
+		size: 20.0
+	}).await?;
+
+	add_test_process(&mut tx, ProcessData {
+		name: "Certifuge 9002".into(),
+		size: 30.0
+	}).await?;
 
 	tx.commit().await?;
 	Ok(())
@@ -103,6 +120,9 @@ async fn main() {
 			list_factories,
 			delete_factory,
 			update_factory,
+			list_factory_processess,
+			add_factory_process,
+			delete_factory_process,
 
 			list_managers,
 			update_manager,

@@ -3,7 +3,7 @@
 	import { Header, Content, SideNav, SideNavItems, SideNavLink } from "carbon-components-svelte";
 	import Home from './routes/Home.svelte'
 	import FactoriesManagers from './routes/Factories-Managers.svelte'
-    import { factories, list_factories, list_managers, list_processess, managers, processess } from "./lib/api";
+    import { factories, factory_processess, list_factories, list_factory_processess, list_managers, list_processess, managers, processess } from "./lib/api";
     import { onMount } from "svelte";
     import Processess from "./routes/Processess.svelte";
     import { Building, Calibrate } from "carbon-icons-svelte";
@@ -12,6 +12,9 @@
         $managers = await list_managers()
         $factories = await list_factories()
 		$processess = await list_processess()
+		for (var factory of $factories) {
+			$factory_processess[factory.id] = await list_factory_processess(factory.id)
+		}
     })
 
 	let isSideNavOpen = false;

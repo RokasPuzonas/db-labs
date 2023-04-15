@@ -1,18 +1,9 @@
 <script lang="ts">
-    import {
-        DataTable,
-        Toolbar,
-        ToolbarContent,
-        ToolbarBatchActions,
-        Button,
-        ToolbarSearch,
-        Modal,
-    } from "carbon-components-svelte"
-    import TrashCan from "carbon-icons-svelte/lib/TrashCan.svelte"
-    import Edit from "carbon-icons-svelte/lib/Edit.svelte"
     import ManagerForm from "../lib/ManagerForm.svelte"
     import FactoryForm from "../lib/FactoryForm.svelte"
-    import { add_manager_factory, delete_factory, update_factory, update_manager, factories, managers } from "../lib/api"
+    import { add_manager_factory, delete_factory, update_factory, update_manager, factories, managers, factory_processess, add_factory_processess, update_factory_processess } from "../lib/api"
+    import ProcessList from "../lib/ProcessList.svelte"
+    import MyDataTable from "../lib/MyDataTable.svelte"
 
     var rows = []
 
@@ -29,19 +20,13 @@
         })
     }
 
-    let isModalShown = false
+    let processess = []
+    let resetProcessList, prepareProcessess
     let resetFactoryForm, validateFactoryForm, factoryData
     let resetManagerForm, validateManagerForm, managerData
 
-    let activeDelete = false
-    let selectedRowIds = []
-    let filteredRowIds = []
-
-    let currentlyEditingId = undefined
-    let showUpdateModal = factory_id => {
-        console.log(factory_id)
-        currentlyEditingId = factory_id
-
+    let showUpdateModal = event => {
+        let factory_id = event.detail
         let factory = $factories.find(factory => factory.id == factory_id)
         let manager = $managers.find(manager => manager.id == factory.manager_id)
 
@@ -54,113 +39,58 @@
 		managerData.title = manager.title
 		managerData.email = manager.email
 
-        isModalShown = true
+        if ($factory_processess[factory_id]) {
+            prepareProcessess([ ...$factory_processess[factory_id] ])
+        } else {
+            prepareProcessess([])
+        }
     }
 
-    let showCreateModal = () => {
-        currentlyEditingId = undefined
+    let showAddModal = () => {
         resetFactoryForm()
         resetManagerForm()
-        isModalShown = true
+        resetProcessList()
     }
 
-    let closeModal = () => {
-        isModalShown = false
-    }
-
-    let deleteSelectedRows = async () => {
-        for (var id of selectedRowIds) {
-            await delete_factory(id)
-        }
-        selectedRowIds = []
+    let validateModal = () => {
+        let isFactoryValid = validateFactoryForm()
+        let isManagerValid = validateManagerForm()
+        return isFactoryValid && isManagerValid
     }
 </script>
 
-<DataTable
-    zebra
-    selectable={activeDelete}
-    batchSelection={activeDelete}
-    sortable
-    bind:selectedRowIds
+<MyDataTable
+    addModalTitle={"Create factory & manager"}
+    updateModalTitle={"Edit factory & manager"}
+    bind:rows
+    on:showAddModal={showAddModal}
+    on:showUpdateModal={showUpdateModal}
+    on:validateModal={validateModal}
+    on:add={async () => {
+        let [factory_id, _] = await add_manager_factory(factoryData, managerData)
+        await add_factory_processess(factory_id, processess)
+    }}
+    on:update={async (event) => {
+        let factory_id = event.detail
+        let manager_id = $factories.find(factory => factory.id == factory_id).manager_id
+        await update_factory(factory_id, factoryData)
+        await update_manager(manager_id, managerData)
+        await update_factory_processess(factory_id, processess)
+    }}
+    on:delete={async (event) => {
+        let ids = event.detail
+        for (var id of ids) {
+            await delete_factory(id)
+        }
+    }}
     headers={[
         { key: "factory_name", value: "Factory" },
         { key: "factory_location", value: "Location" },
         { key: "factory_floor_size", value: "Floor size" },
-        { key: "manager_fullname", value: "Manager" },
-        { key: "update_btn", empty: true, width: "5rem" },
+        { key: "manager_fullname", value: "Manager" }
     ]}
-    {rows}
 >
-    <Toolbar>
-    <ToolbarBatchActions
-        bind:active={activeDelete}
-        on:cancel={(e) => {
-            e.preventDefault();
-            activeDelete = false;
-        }}
-    >
-        <Button
-            icon={TrashCan}
-            disabled={selectedRowIds.length === 0}
-            on:click={deleteSelectedRows}
-        >
-            Delete
-        </Button>
-    </ToolbarBatchActions>
-    <ToolbarContent>
-        <ToolbarSearch
-            persistent
-            shouldFilterRows
-            bind:filteredRowIds
-        />
-        <Button on:click={showCreateModal}>Create</Button>
-        <Button on:click={() => activeDelete = true}>Delete</Button>
-    </ToolbarContent>
-    </Toolbar>
-    <svelte:fragment slot="cell" let:row let:cell>
-        {#if cell.key === "update_btn"}
-            <Button
-                kind="ghost"
-                size="field"
-                iconDescription={"Edit"}
-                icon={Edit}
-                on:click={() => showUpdateModal(row.id)}
-                />
-        {:else}
-            {cell.value}
-        {/if}
-    </svelte:fragment>
-</DataTable>
-
-<Modal
-    bind:open={isModalShown}
-    modalHeading={currentlyEditingId != undefined ? "Edit factory & manager" : "Create factory & manager"}
-    primaryButtonText="Confirm"
-    secondaryButtonText="Cancel"
-    on:open
-    on:click:button--secondary={closeModal}
-    on:submit={async () => {
-        let isFactoryValid = validateFactoryForm()
-        let isManagerValid = validateManagerForm()
-        if (!(isFactoryValid && isManagerValid)) {
-            return false
-        }
-
-        if (currentlyEditingId != undefined) {
-            // TODO: Handle if factory is not found
-            let manager_id = $factories.find(factory => factory.id == currentlyEditingId).manager_id
-
-            await update_factory(currentlyEditingId, factoryData) // TODO: handle if failed
-            await update_manager(manager_id, managerData) // TODO: handle if failed
-        } else {
-            await add_manager_factory(factoryData, managerData) // TODO: handle error
-        }
-
-        closeModal()
-        return true
-    }}
->
-    <div class="flex flex-row gap-1rem">
+    <div class="flex flex-row gap-1rem mb-1rem">
         <div class="flex-grow">
             <p>Factory</p>
             <FactoryForm
@@ -178,4 +108,13 @@
             />
         </div>
     </div>
-</Modal>
+
+    <div class="mt-1rem">
+        <p class="mb-0.5rem">Processess</p>
+        <ProcessList
+            bind:processess
+            bind:prepare={prepareProcessess}
+            bind:reset={resetProcessList}
+        />
+    </div>
+</MyDataTable>

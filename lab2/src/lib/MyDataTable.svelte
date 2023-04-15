@@ -61,30 +61,30 @@
     {rows}
 >
     <Toolbar>
-    <ToolbarBatchActions
-        bind:active={activeDelete}
-        on:cancel={(e) => {
-            e.preventDefault();
-            activeDelete = false;
-        }}
-    >
-        <Button
-            icon={TrashCan}
-            disabled={selectedRowIds.length === 0}
-            on:click={deleteSelectedRows}
+        <ToolbarBatchActions
+            bind:active={activeDelete}
+            on:cancel={(e) => {
+                e.preventDefault();
+                activeDelete = false;
+            }}
         >
-            Delete
-        </Button>
-    </ToolbarBatchActions>
-    <ToolbarContent>
-        <ToolbarSearch
-            persistent
-            shouldFilterRows
-            bind:filteredRowIds
-        />
-        <Button on:click={showAddModal}>Create</Button>
-        <Button on:click={() => activeDelete = true}>Delete</Button>
-    </ToolbarContent>
+            <Button
+                icon={TrashCan}
+                disabled={selectedRowIds.length === 0}
+                on:click={deleteSelectedRows}
+            >
+                Delete
+            </Button>
+        </ToolbarBatchActions>
+        <ToolbarContent>
+            <ToolbarSearch
+                persistent
+                shouldFilterRows
+                bind:filteredRowIds
+            />
+            <Button on:click={showAddModal}>Create</Button>
+            <Button on:click={() => activeDelete = true}>Delete</Button>
+        </ToolbarContent>
     </Toolbar>
     <svelte:fragment slot="cell" let:row let:cell>
         {#if cell.key === "update_btn"}

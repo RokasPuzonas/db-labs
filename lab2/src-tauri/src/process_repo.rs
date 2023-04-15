@@ -15,16 +15,6 @@ pub async fn create_table(tx: &mut MySqlTransaction<'_>) -> Result<()> {
             PRIMARY KEY(ID)
         );"#)
         .execute(&mut *tx).await?;
-    sqlx::query(r#"
-        CREATE TABLE `factory_supports_processes` (
-            FK_PROCESS_ID bigint unsigned NOT NULL,
-            FK_FACTORY_ID bigint unsigned NOT NULL,
-
-            PRIMARY KEY(FK_PROCESS_ID, FK_FACTORY_ID),
-            FOREIGN KEY(FK_PROCESS_ID) REFERENCES PROCESS (ID),
-            FOREIGN KEY(FK_FACTORY_ID) REFERENCES FACTORY (ID)
-        );"#)
-        .execute(&mut *tx).await?;
 
     Ok(())
 }
@@ -60,6 +50,10 @@ pub async fn list(tx: &mut MySqlTransaction<'_>) -> Result<Vec<Process>> {
 
 pub async fn delete(tx: &mut MySqlTransaction<'_>, id: Id) -> Result<()> {
     sqlx::query("DELETE FROM `process` WHERE ID = ?")
+        .bind(id)
+        .execute(&mut *tx).await?;
+
+    sqlx::query("DELETE FROM `factory_supports_processes` WHERE FK_PROCESS_ID = ?")
         .bind(id)
         .execute(&mut *tx).await?;
 
