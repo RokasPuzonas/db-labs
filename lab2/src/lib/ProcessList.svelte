@@ -37,6 +37,13 @@
         processess = newProcessess
         selectedAdd = getAvailableProcessess()[0]
     }
+
+    function removeRow(id) {
+        processess = processess.filter(row => row != id)
+        if (selectedAdd == undefined) {
+            selectedAdd = getAvailableProcessess()[0]
+        }
+    }
 </script>
 
 <div>
@@ -52,9 +59,7 @@
                     icon={TrashCan}
                     iconDescription="Delete"
                     kind="danger-tertiary"
-                    on:click={() => {
-                        processess = processess.filter(row => row != id)
-                    }}
+                    on:click={() => removeRow(id)}
                 />
             </div>
         {/each}
