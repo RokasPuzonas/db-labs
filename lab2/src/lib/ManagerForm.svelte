@@ -38,7 +38,6 @@
 
 		let allowedSymbols = " +()1234567890"
 		for (var symbol of manager.phone_number) {
-			console.log(symbol)
 			if (allowedSymbols.indexOf(symbol) == -1) {
 				showPhoneNumberInvalid = true
 				return

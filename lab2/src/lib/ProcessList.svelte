@@ -44,6 +44,12 @@
             selectedAdd = getAvailableProcessess()[0]
         }
     }
+
+    function onRowSelect(event) {
+        if (event.detail.selectedId == selectedAdd) {
+            selectedAdd = getAvailableProcessess()[0]
+        }
+    }
 </script>
 
 <div>
@@ -53,6 +59,7 @@
                 <Dropdown
                     class="flex-grow"
                     bind:selectedId={id}
+                    on:select={onRowSelect}
                     items={allProcessItems.filter(item => item.id == id || !processess.includes(item.id))}
                 />
                 <Button
