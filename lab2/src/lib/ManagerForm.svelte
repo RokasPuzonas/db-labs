@@ -28,12 +28,43 @@
 		showTitleInvalid = manager.title === ""
 	}
 
+	// Phone number validation
+	let showPhoneNumberInvalid = false
+	function validatePhoneNumber() {
+		showPhoneNumberInvalid = false
+		if (manager.phone_number === "") {
+			return
+		}
+
+		let allowedSymbols = " +()1234567890"
+		for (var symbol of manager.phone_number) {
+			console.log(symbol)
+			if (allowedSymbols.indexOf(symbol) == -1) {
+				showPhoneNumberInvalid = true
+				return
+			}
+		}
+	}
+
+	// Email validation
+	let showEmailInvalid = false
+	function validateEmail() {
+		if (manager.email === "") {
+			showEmailInvalid = false
+			return
+		}
+
+		showEmailInvalid = !manager.email.includes("@")
+	}
+
 	// Exports
 	export const validate = () => {
 		validateFirstName()
 		validateSurname()
 		validateTitle()
-		return !showFirstNameInvalid && !showSurnameInvalid && !showTitleInvalid
+		validateEmail()
+		validatePhoneNumber()
+		return !showFirstNameInvalid && !showSurnameInvalid && !showTitleInvalid && !showEmailInvalid && !showPhoneNumberInvalid
 	};
 
 	export const reset = () => {
@@ -45,6 +76,8 @@
 		showFirstNameInvalid = false
 		showSurnameInvalid = false
 		showTitleInvalid = false
+		showEmailInvalid = false
+		showPhoneNumberInvalid = false
 	};
 </script>
 
@@ -76,10 +109,16 @@
 	/>
 	<TextInput
 		bind:value={manager.phone_number}
+		bind:invalid={showPhoneNumberInvalid}
+		on:input={validatePhoneNumber}
+		invalidText={"Phone number can only contain '+', ' ', '(', ')' and numbers"}
 		labelText="Phone number"
 	/>
 	<TextInput
 		bind:value={manager.email}
+		bind:invalid={showEmailInvalid}
+		on:input={validateEmail}
+		invalidText={"Email must contain '@'"}
 		labelText="Email"
 	/>
 </Form>

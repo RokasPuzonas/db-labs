@@ -52,10 +52,13 @@
         resetProcessList()
     }
 
-    let validateModal = () => {
+    let validateModal = (event) => {
         let isFactoryValid = validateFactoryForm()
         let isManagerValid = validateManagerForm()
-        return isFactoryValid && isManagerValid
+        let valid = isFactoryValid && isManagerValid
+        if (!valid) {
+            event.preventDefault()
+        }
     }
 </script>
 
@@ -91,7 +94,7 @@
     ]}
 >
     <div class="flex flex-row gap-1rem mb-1rem">
-        <div class="flex-grow">
+        <div class="flex-grow w-50">
             <p>Factory</p>
             <FactoryForm
                 bind:factory={factoryData}
@@ -99,7 +102,7 @@
                 bind:reset={resetFactoryForm}
             />
         </div>
-        <div class="flex-grow-2">
+        <div class="flex-grow w-50">
             <p>Manager</p>
             <ManagerForm
                 bind:manager={managerData}

@@ -102,11 +102,13 @@
 </DataTable>
 
 <Modal
+    preventCloseOnClickOutside
     bind:open={isModalShown}
     modalHeading={currentlyUpdatingId != undefined ? updateModalTitle : addModalTitle}
     primaryButtonText="Confirm"
     secondaryButtonText="Cancel"
     on:open
+    on:close={() => console.log("close")}
     on:click:button--secondary={closeModal}
     on:submit={async () => {
         let valid = dispatch("validateModal", undefined, { cancelable: true })
