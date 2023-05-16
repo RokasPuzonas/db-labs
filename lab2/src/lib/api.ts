@@ -30,6 +30,14 @@ export interface ProcessData {
 }
 export interface Process extends ProcessData {
     id: Id
+
+}
+
+export interface FactoryUsedSpace {
+    manager_name: string
+    factory_id: Id,
+    used_size: number,
+    used_percent: number
 }
 
 export let factory_processess = writable<Record<Id, Id[]>>([])
@@ -200,4 +208,13 @@ export async function update_factory_processess(factory_id: Id, process_ids: Id[
         }
         return factory_processess
     })
+}
+
+
+export async function get_factories_by_used_space(from: number, to: number, location: string): Promise<FactoryUsedSpace[]> {
+    return await invoke("get_factories_by_used_space", { from, to, location })
+}
+
+export async function get_processess_of_factory(factory: Id): Promise<ProcessData[]> {
+    return await invoke("get_processess_of_factory", { factory })
 }

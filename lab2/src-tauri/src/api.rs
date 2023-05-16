@@ -1,4 +1,4 @@
-use crate::{models::{Manager, Factory, ManagerData, FactoryData, Id, Process, ProcessData}, manager_repo, factory_repo, process_repo};
+use crate::{models::{Manager, Factory, ManagerData, FactoryData, Id, Process, ProcessData}, manager_repo, factory_repo, process_repo, report_gen::{self, FactoryUsedSpace}};
 use sqlx::{Pool, MySql};
 use tauri::State;
 use anyhow::Result;
@@ -9,10 +9,10 @@ pub struct Database {
 
 #[tauri::command]
 pub async fn add_manager_factory(
-		factory: FactoryData,
-		manager: ManagerData,
-		db: State<'_, Database>
-	) -> Result<(Id, Id)> {
+	factory: FactoryData,
+	manager: ManagerData,
+	db: State<'_, Database>
+) -> Result<(Id, Id)> {
 	let mut tx = db.pool.begin().await?;
 	let manager_id = manager_repo::add(&mut tx, &manager).await?;
 	let factory_id = factory_repo::add(&mut tx, manager_id, &factory).await?;
@@ -117,11 +117,37 @@ pub async fn update_process(id: Id, process: ProcessData, db: State<'_, Database
 
 #[tauri::command]
 pub async fn add_process(
-		process: ProcessData,
-		db: State<'_, Database>
-	) -> Result<Id> {
+	process: ProcessData,
+	db: State<'_, Database>
+) -> Result<Id> {
 	let mut tx = db.pool.begin().await?;
 	let id = process_repo::add(&mut tx, &process).await?;
 	tx.commit().await?;
 	Ok(id)
+}
+
+// --------------------- Report generation ---------------------------
+
+#[tauri::command]
+pub async fn get_factories_by_used_space(
+	from: f32,
+	to: f32,
+	location: String,
+	db: State<'_, Database>
+) -> Result<Vec<FactoryUsedSpace>> {
+	let mut tx = db.pool.begin().await?;
+	let results = report_gen::get_factories_by_used_space(&mut tx, from, to, &location).await?;
+	tx.commit().await?;
+	Ok(results)
+}
+
+#[tauri::command]
+pub async fn get_processess_of_factory(
+	factory: Id,
+	db: State<'_, Database>
+) -> Result<Vec<ProcessData>> {
+	let mut tx = db.pool.begin().await?;
+	let results = report_gen::get_processess_of_factory(&mut tx, factory).await?;
+	tx.commit().await?;
+	Ok(results)
 }

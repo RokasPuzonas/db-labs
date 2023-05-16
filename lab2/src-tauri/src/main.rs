@@ -5,12 +5,13 @@ mod models;
 mod factory_repo;
 mod manager_repo;
 mod process_repo;
+mod report_gen;
 mod api;
 
 use std::{env, process::exit};
 use dotenv::dotenv;
 
-use models::{ManagerData, FactoryData, ProcessData};
+use models::{ManagerData, FactoryData, ProcessData, Id};
 use sqlx::{Pool, MySql, mysql::MySqlPoolOptions, Row, Transaction};
 
 use api::*;
@@ -46,9 +47,13 @@ async fn set_foreign_key_checks(pool: &Pool<MySql>, enable: bool) -> Result<()> 
 	Ok(())
 }
 
-async fn add_test_process(tx: &mut MySqlTransaction<'_>, process: ProcessData) -> Result<()> {
-	process_repo::add(tx, &process).await?;
-	Ok(())
+async fn add_test_processess(tx: &mut MySqlTransaction<'_>, processess: &[ProcessData]) -> Result<Vec<Id>> {
+	let mut ids = vec![];
+	for process in processess {
+		let id = process_repo::add(tx, &process).await?;
+		ids.push(id);
+	}
+	Ok(ids)
 }
 
 async fn add_test_data(pool: &Pool<MySql>) -> Result<()> {
@@ -62,26 +67,20 @@ async fn add_test_data(pool: &Pool<MySql>) -> Result<()> {
 	};
 	let factory = FactoryData {
 		name: "Big factory".into(),
-		location: "idk".into(),
+		location: "Kaunas, fabriko gatve 1".into(),
 		floor_size: 10.0,
 	};
-	let id = manager_repo::add(&mut tx, &manager).await?;
-	factory_repo::add(&mut tx, id, &factory).await?;
+	let manager_id = manager_repo::add(&mut tx, &manager).await?;
+	let factory_id = factory_repo::add(&mut tx, manager_id, &factory).await?;
 
-	add_test_process(&mut tx, ProcessData {
-		name: "Certifuge 9000".into(),
-		size: 10.0
-	}).await?;
+	let process_ids = add_test_processess(&mut tx, &[
+		ProcessData { name: "Certifuge 9000".into(), size: 10.0 },
+		ProcessData { name: "Certifuge 9001".into(), size: 20.0 },
+		ProcessData { name: "Certifuge 9002".into(), size: 30.0 }
+	]).await?;
 
-	add_test_process(&mut tx, ProcessData {
-		name: "Certifuge 9001".into(),
-		size: 20.0
-	}).await?;
-
-	add_test_process(&mut tx, ProcessData {
-		name: "Certifuge 9002".into(),
-		size: 30.0
-	}).await?;
+	factory_repo::add_process(&mut tx, factory_id, process_ids[0]).await?;
+	factory_repo::add_process(&mut tx, factory_id, process_ids[1]).await?;
 
 	tx.commit().await?;
 	Ok(())
@@ -130,7 +129,10 @@ async fn main() {
 			list_processess,
 			update_process,
 			delete_process,
-			add_process
+			add_process,
+
+			get_factories_by_used_space,
+			get_processess_of_factory
 		])
 		.run(tauri::generate_context!())
 		.expect("error while running tauri application");

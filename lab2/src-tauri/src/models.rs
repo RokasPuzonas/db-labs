@@ -45,7 +45,7 @@ pub struct Process {
 	pub size: f32
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Serialize, FromRow)]
 pub struct ProcessData {
 	pub name: String,
 	pub size: f32
